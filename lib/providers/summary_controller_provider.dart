@@ -1,57 +1,57 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:record_to_talk/models/result.dart';
-import 'package:record_to_talk/providers/record_provider.dart';
-import 'package:record_to_talk/providers/record_items_provider.dart';
+import 'package:record_to_talk/models/record_to_text.dart';
+import 'package:record_to_talk/providers/record_controller_provider.dart';
 import 'package:record_to_talk/repository/gpt_repository.dart';
 
-final summaryControllerProvider = AsyncNotifierProvider<SummaryControllerNotifier, SummaryTextResult?>(SummaryControllerNotifier.new);
+final summaryControllerProvider = AsyncNotifierProvider<SummaryControllerNotifier, String?>(SummaryControllerNotifier.new);
 
-class SummaryControllerNotifier extends AsyncNotifier<SummaryTextResult?> {
+class SummaryControllerNotifier extends AsyncNotifier<String?> {
   @override
-  FutureOr<SummaryTextResult?> build() async {
-    final recordItems = ref.watch(recordItemsProvider);
+  FutureOr<String?> build() async {
+    final record = ref.watch(recordControllerProvider);
+    final recordItems = ref.watch(recordToTextsProvider);
 
-    // 文字起こし中のデータが存在する場合はサマリー実行しない
-    if (recordItems.any((r) => r.isWait())) {
-      return state.value;
-    }
-
-    // 文字起こしが全部エラーになっている場合はサマリーを実行するだけ無駄なのでリターン
-    final successRecordItems = recordItems.where((r) => r.isSuccess());
-    if (successRecordItems.isEmpty) {
+    // データがない場合はサマリー実行しない
+    if (recordItems.isEmpty) {
       return null;
     }
 
-    final targetText = successRecordItems.map((e) => e.speechToText ?? '').join('');
-    final summaryResult = await ref.read(gptRepositoryProvider).requestSummary(targetText);
-    ref.read(currentRecordProvider.notifier).setSummaryTextResult(summaryResult);
-    return summaryResult;
+    // 文字起こし中の場合はサマリー実行しない
+    if (record.isWait()) {
+      return state.value;
+    }
+
+    // エラーが発生している場合はサマリー実行しない
+    if (record.isError()) {
+      return null;
+    }
+
+    // TODO inとoutを単純に繋げた会話だとおかしくなるので、どちらが話しているか？という情報を蒸したほうがいい
+    final mergeText = recordItems.map((e) => e.speechToText).join('');
+    return await ref.read(gptRepositoryProvider).requestSummary(mergeText);
   }
 
   Future<void> retry() async {
-    final recordItems = ref.read(recordItemsProvider);
+    final record = ref.read(recordControllerProvider);
 
-    // リトライの場合は成功している文字起こしデータが少なくとも1件はあるのでWait中のものがあるかだけチェックする
-    if (recordItems.any((r) => r.isWait())) {
+    if (record.isWait()) {
       return;
     }
 
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final successRecordItems = recordItems.where((r) => r.isSuccess());
-      final targetText = successRecordItems.map((e) => e.speechToText ?? '').join('');
-      final summaryResult = await ref.read(gptRepositoryProvider).requestSummary(targetText);
-      ref.read(currentRecordProvider.notifier).setSummaryTextResult(summaryResult);
-      return summaryResult;
+      final recordItems = ref.read(recordToTextsProvider);
+      final targetText = recordItems.map((e) => e.speechToText).join('');
+      return await ref.read(gptRepositoryProvider).requestSummary(targetText);
     });
   }
 
-  Future<void> setSummaryTextResult(SummaryTextResult? result) async {
+  Future<void> setSummaryTextResult(String? result) async {
     state = const AsyncLoading();
     state = await AsyncValue.guard(() async {
-      return (result != null) ? result : const SummaryTextResult('サマリーがありません。録音を開始してすぐ停止すればサマリーが再作成されます。', 0);
+      return (result != null) ? result : 'サマリーがありません。録音を開始してすぐ停止すればサマリーが再作成されます。';
     });
   }
 }

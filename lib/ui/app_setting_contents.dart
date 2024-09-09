@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:record/record.dart';
-import 'package:record_to_talk/providers/app_setting_provider.dart';
+import 'package:record_to_talk/models/app_setting.dart';
 import 'package:record_to_talk/providers/record_controller_provider.dart';
 import 'package:record_to_talk/ui/widgets/drop_down_device.dart';
 import 'package:record_to_talk/ui/widgets/drop_down_record_interval.dart';
@@ -25,11 +25,11 @@ class AppSettingContents extends StatelessWidget {
               SizedBox(height: 24),
               _DropdownSoundDevices(),
               SizedBox(height: 24),
+              _TextFieldCacheDirPath(),
+              SizedBox(height: 24),
               _TextFieldSummaryPrompt(),
               SizedBox(height: 16),
               Divider(),
-              SizedBox(height: 24),
-              _TextFieldCacheDirPath(),
               SizedBox(height: 16),
               _SwitchAppTheme(),
               SizedBox(height: 16),
@@ -119,18 +119,38 @@ class _DropdownSoundDevices extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ref.watch(recordDevicesProvider).when(
       data: (data) {
-        return Row(
+        return Column(
           children: [
-            const Text('録音デバイス: '),
-            const SizedBox(width: 8),
-            DropDownDevice(
-              selectDevice: ref.watch(appSettingProvider).inputDevice,
-              devices: data,
-              onChanged: (InputDevice? device) {
-                if (device != null) {
-                  ref.read(appSettingProvider.notifier).setRecordDevice(device);
-                }
-              },
+            Row(
+              children: [
+                const Text('録音デバイス(相手の音声): '),
+                const SizedBox(width: 8),
+                DropDownDevice(
+                  selectDevice: ref.watch(appSettingProvider).inputDevice,
+                  devices: data,
+                  onChanged: (InputDevice? device) {
+                    if (device != null) {
+                      ref.read(appSettingProvider.notifier).setRecordDevice(device);
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('録音デバイス(自分の音声): '),
+                const SizedBox(width: 8),
+                DropDownDevice(
+                  selectDevice: ref.watch(appSettingProvider).ownOutDevice,
+                  devices: data,
+                  onChanged: (InputDevice? device) {
+                    if (device != null) {
+                      ref.read(appSettingProvider.notifier).setOwnOutDevice(device);
+                    }
+                  },
+                ),
+              ],
             ),
           ],
         );

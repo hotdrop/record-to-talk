@@ -17,7 +17,7 @@ class BasePage extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Row(
           children: [
-            const Expanded(flex: 2, child: _MenuList()),
+            const Expanded(flex: 1, child: _MenuList()),
             const VerticalDivider(width: 1),
             Expanded(
               flex: 8,
@@ -40,7 +40,7 @@ class _MenuList extends ConsumerWidget {
       children: [
         _SelectMenu(
           icon: Icons.record_voice_over,
-          label: 'New Record',
+          label: '録音',
           onTap: () {
             final isRecording = ref.read(nowRecordingProvider);
             if (isRecording) {
@@ -54,7 +54,7 @@ class _MenuList extends ConsumerWidget {
         const Divider(),
         _SelectMenu(
           icon: Icons.settings,
-          label: 'Setting',
+          label: '設定',
           onTap: () => ref.read(selectMenuProvider.notifier).selectSettingMenu(),
         ),
       ],
@@ -81,7 +81,7 @@ class _SelectMenu extends ConsumerWidget {
           children: [
             Icon(icon),
             const SizedBox(width: 8),
-            Text(label, style: TextStyle(color: nowRecording ? Colors.grey : null)),
+            Flexible(child: Text(label, style: TextStyle(color: nowRecording ? Colors.grey : null))),
           ],
         ),
       ),

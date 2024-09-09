@@ -2,34 +2,29 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:record/record.dart';
 import 'package:record_to_talk/common/app_logger.dart';
-import 'package:record_to_talk/providers/app_setting_provider.dart';
-import 'package:record_to_talk/providers/record_items_provider.dart';
+import 'package:record_to_talk/models/app_setting.dart';
+import 'package:record_to_talk/models/record_to_text.dart';
 import 'package:record_to_talk/providers/timer_provider.dart';
 
-final recordControllerProvider = NotifierProvider<RecordControllerNotifier, AudioRecorder>(RecordControllerNotifier.new);
+final recordControllerProvider = NotifierProvider<RecordControllerNotifier, RecordController>(RecordControllerNotifier.new);
 
-class RecordControllerNotifier extends Notifier<AudioRecorder> {
-  Timer? _segmentTimer;
-  int _elapsedTime = 0;
-
+class RecordControllerNotifier extends Notifier<RecordController> {
   @override
-  AudioRecorder build() {
+  RecordController build() {
     ref.onDispose(() {
       state.dispose();
-      _segmentTimer?.cancel();
     });
-    return AudioRecorder();
+    return RecordController(inputAudioRecorder: AudioRecorder(), ownOutAudioRecorder: AudioRecorder());
   }
 
   Future<void> start() async {
     try {
       if (await state.hasPermission()) {
-        final appSetting = ref.read(appSettingProvider);
-        final config = RecordConfig(encoder: AudioEncoder.aacLc, device: appSetting.inputDevice);
         // 初回録音を実行し、以降は一定間隔で録音データを管理する
         ref.read(timerProvider.notifier).start();
-        await state.start(config, path: appSetting.createSoundFilePath());
-        await _startRecordingLoop(config);
+        final appSetting = ref.read(appSettingProvider);
+        await state.start(appSetting);
+        await _startRecordingLoop();
       }
     } catch (e, s) {
       stop();
@@ -38,43 +33,38 @@ class RecordControllerNotifier extends Notifier<AudioRecorder> {
     }
   }
 
-  Future<void> stop() async {
-    await _saveCurrentSegment();
-    _segmentTimer?.cancel();
-    ref.read(timerProvider.notifier).stop();
-    ref.read(nowRecordingProvider.notifier).state = false;
-    _elapsedTime = 0;
-  }
-
-  Future<void> _startRecordingLoop(RecordConfig config) async {
+  Future<void> _startRecordingLoop() async {
     final appSetting = ref.read(appSettingProvider);
-
-    _segmentTimer = Timer.periodic(Duration(minutes: appSetting.recordIntervalMinutes), (timer) async {
+    Timer.periodic(Duration(minutes: appSetting.recordIntervalMinutes), (timer) async {
       // 現在のセグメントを保存し、音声データを生成
       await _saveCurrentSegment();
       // 新しいセグメントの録音を開始
-      await state.start(config, path: appSetting.createSoundFilePath());
+      await state.start(appSetting);
     });
 
     ref.read(nowRecordingProvider.notifier).state = true;
   }
 
-  Future<void> _saveCurrentSegment() async {
-    final filePath = await state.stop();
-    if (filePath != null) {
-      ref.read(recordItemsProvider.notifier).add(
-            filePath: filePath,
-            time: ref.read(timerProvider) - _elapsedTime,
-          );
-      _elapsedTime = ref.read(timerProvider);
-    } else {
-      AppLogger.e('音声データの保存に失敗しました filePath=$filePath');
-    }
+  Future<void> stop() async {
+    await _saveCurrentSegment();
+    ref.read(timerProvider.notifier).stop();
+    ref.read(nowRecordingProvider.notifier).state = false;
   }
 
-  Future<List<String>> devices() async {
-    final record = await state.listInputDevices();
-    return record.map((e) => e.label).toList();
+  Future<void> _saveCurrentSegment() async {
+    final (inPath, outPath) = await state.stop();
+    if (inPath == null || outPath == null) {
+      state = state.copyWith(status: RecordToTalkStatus.error);
+      AppLogger.e('音声データの保存に失敗しました inPath=$inPath outPath=$outPath');
+      return;
+    }
+
+    try {
+      await ref.read(recordToTextsProvider.notifier).executeToText(inPath, outPath);
+      state = state.copyWith(status: RecordToTalkStatus.success);
+    } catch (e) {
+      state = state.copyWith(status: RecordToTalkStatus.error, errorMessage: '$e');
+    }
   }
 }
 
@@ -83,3 +73,65 @@ final recordDevicesProvider = FutureProvider<List<InputDevice>>((ref) async {
 });
 
 final nowRecordingProvider = StateProvider<bool>((ref) => false);
+
+///
+/// 録音状態や結果を保持するコントローラ
+///
+class RecordController {
+  const RecordController({
+    required this.inputAudioRecorder,
+    required this.ownOutAudioRecorder,
+    this.status = RecordToTalkStatus.none,
+    this.toTextExecTime = 0,
+    this.errorMessage,
+  });
+
+  final AudioRecorder inputAudioRecorder;
+  final AudioRecorder ownOutAudioRecorder;
+  final RecordToTalkStatus status;
+  final int toTextExecTime;
+  final String? errorMessage;
+
+  bool isSuccess() => status == RecordToTalkStatus.success;
+  bool isError() => status == RecordToTalkStatus.error;
+  bool isWait() => status == RecordToTalkStatus.wait;
+
+  Future<bool> hasPermission() async {
+    return await inputAudioRecorder.hasPermission();
+  }
+
+  Future<void> start(AppSetting appSetting) async {
+    final inputConfig = RecordConfig(encoder: AudioEncoder.aacLc, device: appSetting.inputDevice);
+    final ownOutConfig = RecordConfig(encoder: AudioEncoder.aacLc, device: appSetting.ownOutDevice);
+
+    await inputAudioRecorder.start(inputConfig, path: 'in_${appSetting.createSoundFilePath()}');
+    await ownOutAudioRecorder.start(ownOutConfig, path: 'out_${appSetting.createSoundFilePath()}');
+  }
+
+  Future<(String?, String?)> stop() async {
+    final inFilePath = await inputAudioRecorder.stop();
+    final ownOutFilePath = await ownOutAudioRecorder.stop();
+    return (inFilePath, ownOutFilePath);
+  }
+
+  Future<List<InputDevice>> listInputDevices() async {
+    return await inputAudioRecorder.listInputDevices();
+  }
+
+  void dispose() {
+    inputAudioRecorder.dispose();
+    ownOutAudioRecorder.dispose();
+  }
+
+  RecordController copyWith({RecordToTalkStatus? status, int? toTextExecTime, String? errorMessage}) {
+    return RecordController(
+      inputAudioRecorder: inputAudioRecorder,
+      ownOutAudioRecorder: ownOutAudioRecorder,
+      status: status ?? this.status,
+      toTextExecTime: toTextExecTime ?? this.toTextExecTime,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+enum RecordToTalkStatus { none, wait, success, error }

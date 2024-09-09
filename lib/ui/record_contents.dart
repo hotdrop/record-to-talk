@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:record_to_talk/providers/app_setting_provider.dart';
-import 'package:record_to_talk/providers/record_items_provider.dart';
+import 'package:record_to_talk/models/app_setting.dart';
+import 'package:record_to_talk/models/record_to_text.dart';
 import 'package:record_to_talk/providers/record_controller_provider.dart';
 import 'package:record_to_talk/providers/summary_controller_provider.dart';
 import 'package:record_to_talk/providers/timer_provider.dart';
-import 'package:record_to_talk/ui/widgets/record_to_text_view.dart';
-import 'package:record_to_talk/ui/widgets/row_record_data.dart';
+import 'package:record_to_talk/ui/widgets/record_to_talk_view.dart';
 import 'package:record_to_talk/ui/widgets/summary_text_view.dart';
 
 class RecordContents extends StatelessWidget {
@@ -19,11 +18,9 @@ class RecordContents extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Row(
           children: [
-            Expanded(flex: 2, child: _OperationView()),
+            Expanded(flex: 3, child: _TalkRecordView()),
             VerticalDivider(width: 1),
-            Expanded(flex: 3, child: _RecordToTextView()),
-            VerticalDivider(width: 1),
-            Expanded(flex: 3, child: _SummaryTextView()),
+            Expanded(flex: 2, child: _SummaryTextView()),
           ],
         ),
       ),
@@ -31,8 +28,8 @@ class RecordContents extends StatelessWidget {
   }
 }
 
-class _OperationView extends StatelessWidget {
-  const _OperationView();
+class _TalkRecordView extends StatelessWidget {
+  const _TalkRecordView();
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +38,8 @@ class _OperationView extends StatelessWidget {
         _ViewTimer(),
         SizedBox(height: 16),
         _OperationButtons(),
-        _ListRecords(),
+        Divider(),
+        _RecordToTextView(),
       ],
     );
   }
@@ -100,51 +98,15 @@ class _OperationButtons extends ConsumerWidget {
   }
 }
 
-class _ListRecords extends ConsumerWidget {
-  const _ListRecords();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final recordItems = ref.watch(recordItemsProvider);
-    final selectItemId = ref.watch(selectRecordItemStateProvider)?.id ?? -1;
-    final isDarkMode = ref.watch(appSettingProvider).isDarkMode;
-
-    return Flexible(
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: recordItems.length,
-        itemBuilder: (context, index) {
-          final currentFile = recordItems[index];
-          return RowRecordData(
-            key: ValueKey(currentFile.id),
-            recordItem: currentFile,
-            isSelected: currentFile.id == selectItemId,
-            selectColor: isDarkMode ? const Color.fromARGB(255, 97, 97, 97) : const Color.fromARGB(255, 224, 224, 224),
-            onTap: () {
-              ref.read(recordItemsProvider.notifier).selectRow(currentFile);
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
 class _RecordToTextView extends ConsumerWidget {
   const _RecordToTextView();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selectItem = ref.watch(selectRecordItemStateProvider);
-
+    final recordToTexts = ref.watch(recordToTextsProvider);
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: RecordToTextView(
-        selectItem,
-        onErrorRetryButton: () async {
-          await ref.read(recordItemsProvider.notifier).retry(file: selectItem!);
-        },
-      ),
+      child: RecordToTextView(recordToTexts),
     );
   }
 }

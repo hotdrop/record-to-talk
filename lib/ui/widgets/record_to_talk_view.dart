@@ -1,57 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:record_to_talk/common/int_extension.dart';
-import 'package:record_to_talk/models/record.dart';
-import 'package:record_to_talk/ui/widgets/retry_button.dart';
+import 'package:record_to_talk/models/record_to_text.dart';
 
 class RecordToTextView extends StatelessWidget {
-  const RecordToTextView(this.recordItem, {super.key, this.onErrorRetryButton});
+  const RecordToTextView(this.recordToTexts, {super.key});
 
-  final RecordItem? recordItem;
-  final VoidCallback? onErrorRetryButton;
-
-  @override
-  Widget build(BuildContext context) {
-    final lRecordItem = recordItem;
-
-    if (lRecordItem == null) {
-      return const _EmptyTextView();
-    } else {
-      return switch (lRecordItem.status) {
-        RecordToTextStatus.success => Column(
-            children: [
-              _Header(textLength: lRecordItem.speechToText!.length, execTimeStr: lRecordItem.speechToTextExecTime.formatExecTime()),
-              const Divider(),
-              _TextViewArea(lRecordItem.speechToText!),
-            ],
-          ),
-        RecordToTextStatus.error => Column(
-            children: [
-              const _Header(textLength: 0),
-              const Divider(),
-              RetryButton(onPressed: onErrorRetryButton),
-              _TextViewArea(lRecordItem.errorMessage ?? '不明なエラーです', textColor: Colors.red),
-            ],
-          ),
-        RecordToTextStatus.wait => const _LoadingTextView(),
-      };
-    }
-  }
-}
-
-class _EmptyTextView extends StatelessWidget {
-  const _EmptyTextView();
+  final List<RecordToText>? recordToTexts;
 
   @override
   Widget build(BuildContext context) {
-    return const Column(
-      children: [
-        Text('文字起こしテキスト', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
-        Divider(),
-        SizedBox(height: 8),
-        Text('選択した行の文字起こしテキストをここに表示します'),
-      ],
-    );
+    // TODO アイテムのテキストをタイムライン順に上から表示していく。
+    //  wait中なら一番下はProgressにする。
+
+    return SizedBox.shrink();
+    // if (recordToTexts == null) {
+    //   return const SizedBox.shrink();
+    // } else {
+    //   return switch (lRecordItem.status) {
+    //     RecordToTextStatus.success => Column(
+    //         children: [
+    //           _Header(textLength: lRecordItem.speechToText!.length, execTimeStr: lRecordItem.speechToTextExecTime.formatExecTime()),
+    //           const Divider(),
+    //           _TextViewArea(lRecordItem.speechToText!),
+    //         ],
+    //       ),
+    //     RecordToTextStatus.error => Column(
+    //         children: [
+    //           const _Header(textLength: 0),
+    //           const Divider(),
+    //           RetryButton(onPressed: onErrorRetryButton),
+    //           _TextViewArea(lRecordItem.errorMessage ?? '不明なエラーです', textColor: Colors.red),
+    //         ],
+    //       ),
+    //     RecordToTextStatus.wait => const _LoadingTextView(),
+    //   };
+    // }
   }
 }
 
