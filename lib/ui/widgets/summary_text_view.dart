@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:record_to_talk/common/int_extension.dart';
-import 'package:record_to_talk/models/app_time.dart';
+import 'package:record_to_talk/models/result.dart';
 import 'package:record_to_talk/ui/widgets/retry_button.dart';
 
 class SummayTextView extends StatelessWidget {
   const SummayTextView(this.summary, {super.key});
 
-  final String? summary;
+  final SummaryTextResult? summary;
 
   @override
   Widget build(BuildContext context) {
-    final textLength = summary?.length ?? 0;
+    final textLength = summary?.text.length ?? 0;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          _Header(textLength: textLength),
+          _Header(textLength: textLength, execTimeStr: summary?.executeTime.formatExecTime()),
           const Divider(),
-          _TextViewArea(summary ?? '録音データが追加されるたびにここにまとめテキストが作成されます。'),
+          _TextViewArea(summary?.text ?? '録音データが追加されるたびにここにまとめテキストが作成されます。'),
         ],
       ),
     );
@@ -68,14 +67,14 @@ class SummaryErrorTextView extends StatelessWidget {
   }
 }
 
-class _Header extends ConsumerWidget {
-  const _Header({required this.textLength});
+class _Header extends StatelessWidget {
+  const _Header({required this.textLength, this.execTimeStr});
 
   final int textLength;
+  final String? execTimeStr;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final execTime = ref.watch(appTimeManagerProvider.select((v) => v.currentSummaryTimeEpoch));
+  Widget build(BuildContext context) {
     return Column(
       children: [
         const Text('これまでの録音情報まとめ', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
@@ -84,7 +83,7 @@ class _Header extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             if (textLength > 0) Text('文字数: $textLength', style: const TextStyle(color: Colors.green)),
-            if (execTime > 0) Text('実行時間: ${execTime.formatExecTime()}', style: const TextStyle(color: Colors.green)),
+            if (execTimeStr != null) Text('実行時間: $execTimeStr', style: const TextStyle(color: Colors.green)),
           ],
         ),
       ],

@@ -51,12 +51,3 @@ class OwnOutRecordToText extends RecordToText {
     return OwnOutRecordToText._(const Uuid().v4(), text, timestamp);
   }
 }
-
-///
-/// APIの結果を保持するクラス
-///
-class RecordToTextResult {
-  const RecordToTextResult(this.text, this.timestamp);
-  final String text;
-  final DateTime timestamp;
-}

@@ -104,8 +104,8 @@ class RecordController {
     final inputConfig = RecordConfig(encoder: AudioEncoder.aacLc, device: appSetting.inputDevice);
     final ownOutConfig = RecordConfig(encoder: AudioEncoder.aacLc, device: appSetting.ownOutDevice);
 
-    await inputAudioRecorder.start(inputConfig, path: 'in_${appSetting.createSoundFilePath()}');
-    await ownOutAudioRecorder.start(ownOutConfig, path: 'out_${appSetting.createSoundFilePath()}');
+    await inputAudioRecorder.start(inputConfig, path: appSetting.createSoundFilePath(alias: 'in'));
+    await ownOutAudioRecorder.start(ownOutConfig, path: appSetting.createSoundFilePath(alias: 'out'));
   }
 
   Future<(String?, String?)> stop() async {

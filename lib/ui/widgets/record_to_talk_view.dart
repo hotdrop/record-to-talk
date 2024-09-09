@@ -4,7 +4,7 @@ import 'package:record_to_talk/models/record_to_text.dart';
 class RecordToTextView extends StatelessWidget {
   const RecordToTextView(this.recordToTexts, {super.key});
 
-  final List<RecordToText>? recordToTexts;
+  final List<RecordToText> recordToTexts;
 
   @override
   Widget build(BuildContext context) {

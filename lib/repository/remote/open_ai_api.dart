@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:record_to_talk/common/app_logger.dart';
 import 'package:record_to_talk/models/app_setting.dart';
-import 'package:record_to_talk/models/record_to_text.dart';
+import 'package:record_to_talk/models/result.dart';
 
 final openAiApiProvider = Provider((ref) => _OpenAiApi(ref));
 final _dioProvider = Provider((_) => Dio());

@@ -97,9 +97,9 @@ class AppSetting {
 
   static const String defaultSummaryPrompt = '次の文章は複数の音声録音からの文字起こしをつなげて作成されたものです。このテキストに含まれる主要な情報を要約してください:';
 
-  String createSoundFilePath() {
+  String createSoundFilePath({required String alias}) {
     final dateFormat = DateFormat('yyyyMMddHHmmss');
-    final fileName = '${dateFormat.format(DateTime.now())}.$audioExtension';
+    final fileName = '${alias}_${dateFormat.format(DateTime.now())}.$audioExtension';
     return path.join(cacheDirPath, fileName);
   }
 

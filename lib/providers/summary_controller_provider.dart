@@ -2,14 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:record_to_talk/models/record_to_text.dart';
+import 'package:record_to_talk/models/result.dart';
 import 'package:record_to_talk/providers/record_controller_provider.dart';
 import 'package:record_to_talk/repository/gpt_repository.dart';
 
-final summaryControllerProvider = AsyncNotifierProvider<SummaryControllerNotifier, String?>(SummaryControllerNotifier.new);
+final summaryControllerProvider = AsyncNotifierProvider<SummaryControllerNotifier, SummaryTextResult?>(SummaryControllerNotifier.new);
 
-class SummaryControllerNotifier extends AsyncNotifier<String?> {
+class SummaryControllerNotifier extends AsyncNotifier<SummaryTextResult?> {
   @override
-  FutureOr<String?> build() async {
+  FutureOr<SummaryTextResult?> build() async {
     final record = ref.watch(recordControllerProvider);
     final recordItems = ref.watch(recordToTextsProvider);
 
@@ -45,13 +46,6 @@ class SummaryControllerNotifier extends AsyncNotifier<String?> {
       final recordItems = ref.read(recordToTextsProvider);
       final targetText = recordItems.map((e) => e.speechToText).join('');
       return await ref.read(gptRepositoryProvider).requestSummary(targetText);
-    });
-  }
-
-  Future<void> setSummaryTextResult(String? result) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      return (result != null) ? result : 'サマリーがありません。録音を開始してすぐ停止すればサマリーが再作成されます。';
     });
   }
 }
