@@ -16,7 +16,7 @@ class InputTalkRow extends StatelessWidget {
         Expanded(
           child: Card(
             elevation: 1.0,
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.surfaceBright,
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: SelectableText(recordToText.speechToText),
@@ -25,7 +25,7 @@ class InputTalkRow extends StatelessWidget {
         ),
         const Padding(
           padding: EdgeInsets.only(top: 8.0),
-          child: Icon(Icons.person_pin),
+          child: Icon(Icons.support_agent),
         ),
         const SizedBox(width: 8),
       ],

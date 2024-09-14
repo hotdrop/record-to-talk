@@ -19,7 +19,7 @@ class OwnTalkRow extends StatelessWidget {
         Expanded(
           child: Card(
             elevation: 1.0,
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.surfaceContainer,
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: SelectableText(recordToText.speechToText),
