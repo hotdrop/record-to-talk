@@ -100,10 +100,10 @@ class _DropdownRecordIntervalMinutes extends ConsumerWidget {
         const Text('録音のデータ化間隔: '),
         const SizedBox(width: 8),
         DropDownRecordInterval(
-          value: ref.watch(appSettingProvider).recordIntervalMinutes,
+          value: ref.watch(appSettingProvider).recordIntervalSeconds,
           onChanged: (int? selectValue) {
             if (selectValue != null) {
-              ref.read(appSettingProvider.notifier).setRecordIntervalMinutes(selectValue);
+              ref.read(appSettingProvider.notifier).setRecordIntervalSecond(selectValue);
             }
           },
         ),

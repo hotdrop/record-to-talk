@@ -8,12 +8,12 @@ class _AppSettingRepository {
 
   final Ref _ref;
 
-  Future<int?> getRecordIntervalMinutes() async {
-    return await _ref.read(sharedPrefsProvider).getRecordIntervalMinutes();
+  Future<int?> getRecordIntervalSeconds() async {
+    return await _ref.read(sharedPrefsProvider).getRecordIntervalSeconds();
   }
 
-  Future<void> saveRecordIntervalMinutes(int value) async {
-    await _ref.read(sharedPrefsProvider).saveRecordIntervalMinutes(value);
+  Future<void> saveRecordIntervalSeconds(int value) async {
+    await _ref.read(sharedPrefsProvider).saveRecordIntervalSeconds(value);
   }
 
   Future<bool> isDarkMode() async {

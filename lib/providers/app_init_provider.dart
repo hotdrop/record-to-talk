@@ -9,7 +9,7 @@ import 'package:record_to_talk/repository/app_setting_repository.dart';
 /// ここでアプリに必要な初期処理を行う
 ///
 final appInitFutureProvider = FutureProvider((ref) async {
-  final minutes = await ref.read(appSettingsRepositoryProvider).getRecordIntervalMinutes();
+  final second = await ref.read(appSettingsRepositoryProvider).getRecordIntervalSeconds();
   final summaryPrompt = await ref.read(appSettingsRepositoryProvider).getSummaryPrompt();
   final cacheDir = await getApplicationCacheDirectory();
   final packageInfo = await PackageInfo.fromPlatform();
@@ -17,7 +17,7 @@ final appInitFutureProvider = FutureProvider((ref) async {
 
   await ref.read(appSettingProvider.notifier).refresh(
         cacheDirPath: cacheDir.path,
-        recordIntervalMinutes: minutes,
+        recordIntervalSecond: second,
         summaryPrompt: summaryPrompt,
         appName: packageInfo.appName,
         appVersion: packageInfo.version,

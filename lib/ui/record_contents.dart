@@ -5,7 +5,8 @@ import 'package:record_to_talk/models/record_to_text.dart';
 import 'package:record_to_talk/providers/record_controller_provider.dart';
 import 'package:record_to_talk/providers/summary_controller_provider.dart';
 import 'package:record_to_talk/providers/timer_provider.dart';
-import 'package:record_to_talk/ui/widgets/record_to_talk_view.dart';
+import 'package:record_to_talk/ui/widgets/input_talk_row.dart';
+import 'package:record_to_talk/ui/widgets/own_talk_row.dart';
 import 'package:record_to_talk/ui/widgets/summary_text_view.dart';
 
 class RecordContents extends StatelessWidget {
@@ -39,7 +40,9 @@ class _TalkRecordView extends StatelessWidget {
         SizedBox(height: 16),
         _OperationButtons(),
         Divider(),
-        _RecordToTextView(),
+        Expanded(
+          child: _RecordToTextView(),
+        ),
       ],
     );
   }
@@ -104,9 +107,24 @@ class _RecordToTextView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final recordToTexts = ref.watch(recordToTextsProvider);
+    if (recordToTexts.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: RecordToTextView(recordToTexts),
+      child: ListView.builder(
+        itemCount: recordToTexts.length,
+        itemBuilder: (context, index) {
+          final record = recordToTexts[index];
+          switch (record) {
+            case InputRecordToText():
+              return InputTalkRow(record);
+            case OwnOutRecordToText():
+              return OwnTalkRow(record);
+          }
+        },
+      ),
     );
   }
 }

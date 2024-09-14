@@ -10,10 +10,10 @@ class _SharedPrefs {
   final Ref _ref;
 
   ///
-  /// 録音時間の間隔（分）
+  /// 録音時間の間隔（秒）
   ///
-  Future<int?> getRecordIntervalMinutes() async => await _getInt('key001');
-  Future<void> saveRecordIntervalMinutes(int value) async {
+  Future<int?> getRecordIntervalSeconds() async => await _getInt('key001');
+  Future<void> saveRecordIntervalSeconds(int value) async {
     await _saveInt('key001', value);
   }
 

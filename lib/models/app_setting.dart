@@ -15,7 +15,7 @@ class AppSettingNotifier extends Notifier<AppSetting> {
 
   Future<void> refresh({
     required String cacheDirPath,
-    int? recordIntervalMinutes,
+    int? recordIntervalSecond,
     String? summaryPrompt,
     required String appName,
     required String appVersion,
@@ -23,7 +23,7 @@ class AppSettingNotifier extends Notifier<AppSetting> {
   }) async {
     state = state.copyWith(
       cacheDirPath: cacheDirPath,
-      recordIntervalMinutes: recordIntervalMinutes,
+      recordIntervalSeconds: recordIntervalSecond,
       summaryPrompt: summaryPrompt,
       appName: appName,
       appVersion: appVersion,
@@ -35,9 +35,9 @@ class AppSettingNotifier extends Notifier<AppSetting> {
     state = state.copyWith(apiKey: value);
   }
 
-  void setRecordIntervalMinutes(int value) {
-    ref.read(appSettingsRepositoryProvider).saveRecordIntervalMinutes(value);
-    state = state.copyWith(recordIntervalMinutes: value);
+  void setRecordIntervalSecond(int value) {
+    ref.read(appSettingsRepositoryProvider).saveRecordIntervalSeconds(value);
+    state = state.copyWith(recordIntervalSeconds: value);
   }
 
   void setRecordDevice(InputDevice device) {
@@ -65,7 +65,7 @@ class AppSetting {
     this.apiKey = '',
     this.cacheDirPath = '',
     this.audioExtension = 'm4a', // 複数プラットフォーム対応する場合は拡張子を可変にする
-    this.recordIntervalMinutes = 1,
+    this.recordIntervalSeconds = 10,
     this.inputDevice,
     this.ownOutDevice,
     this.summaryPrompt = defaultSummaryPrompt,
@@ -80,8 +80,8 @@ class AppSetting {
   final String cacheDirPath;
   // 一時出力する音声データファイルの拡張子
   final String audioExtension;
-  // 録音の間隔（分）
-  final int recordIntervalMinutes;
+  // 録音の間隔（秒）
+  final int recordIntervalSeconds;
   // 録音デバイス（相手からの音声）
   final InputDevice? inputDevice;
   // 録音デバイス（自分の声=マイクの音声）
@@ -109,7 +109,7 @@ class AppSetting {
     String? apiKey,
     String? cacheDirPath,
     String? audioExtension,
-    int? recordIntervalMinutes,
+    int? recordIntervalSeconds,
     InputDevice? inputDevice,
     InputDevice? ownOutDevice,
     String? summaryPrompt,
@@ -121,7 +121,7 @@ class AppSetting {
       apiKey: apiKey ?? this.apiKey,
       cacheDirPath: cacheDirPath ?? this.cacheDirPath,
       audioExtension: audioExtension ?? this.audioExtension,
-      recordIntervalMinutes: recordIntervalMinutes ?? this.recordIntervalMinutes,
+      recordIntervalSeconds: recordIntervalSeconds ?? this.recordIntervalSeconds,
       inputDevice: inputDevice ?? this.inputDevice,
       ownOutDevice: ownOutDevice ?? this.ownOutDevice,
       summaryPrompt: summaryPrompt ?? this.summaryPrompt,

@@ -19,12 +19,12 @@ class DropDownRecordInterval extends StatelessWidget {
         elevation: 8,
         underline: Container(color: Colors.transparent),
         onChanged: onChanged,
-        items: [1, 5, 10].map<DropdownMenuItem<int>>((m) {
+        items: [10, 30, 60].map<DropdownMenuItem<int>>((m) {
           return DropdownMenuItem<int>(
             value: m,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text('$m分'),
+              child: Text('$m秒'),
             ),
           );
         }).toList(),

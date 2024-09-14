@@ -35,7 +35,7 @@ class RecordControllerNotifier extends Notifier<RecordController> {
 
   Future<void> _startRecordingLoop() async {
     final appSetting = ref.read(appSettingProvider);
-    Timer.periodic(Duration(minutes: appSetting.recordIntervalMinutes), (timer) async {
+    Timer.periodic(Duration(seconds: appSetting.recordIntervalSeconds), (timer) async {
       // 現在のセグメントを保存し、音声データを生成
       await _saveCurrentSegment();
       // 新しいセグメントの録音を開始
