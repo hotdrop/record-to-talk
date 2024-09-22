@@ -29,7 +29,7 @@ class SummaryControllerNotifier extends AsyncNotifier<SummaryTextResult?> {
       return null;
     }
 
-    // TODO inとoutを単純に繋げた会話だとおかしくなるので、どちらが話しているか？という情報を蒸したほうがいい
+    // TODO inとoutを単純に繋げた会話だとおかしくなるので、どちらが話しているか？という情報を付与した方が良いか？
     final mergeText = recordItems.map((e) => e.speechToText).join('');
     return await ref.read(gptRepositoryProvider).requestSummary(mergeText);
   }

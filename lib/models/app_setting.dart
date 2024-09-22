@@ -95,7 +95,7 @@ class AppSetting {
   // テーマモード
   final ThemeMode themeMode;
 
-  static const String defaultSummaryPrompt = '次の文章は複数の音声録音からの文字起こしをつなげて作成されたものです。このテキストに含まれる主要な情報を要約してください:';
+  static const String defaultSummaryPrompt = '次の文章は複数人の会話を文字起こしして時系列に繋げて作成した文章です。このテキストに含まれる主要な情報を要約してください:';
 
   String createSoundFilePath({required String alias}) {
     final dateFormat = DateFormat('yyyyMMddHHmmss');
